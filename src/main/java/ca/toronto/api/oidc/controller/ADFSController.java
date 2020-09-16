@@ -43,7 +43,7 @@ import ca.toronto.api.oidc.utils.CookieUtils;
 
 
 @RestController
-@RequestMapping(value = { "/oauth2/callback" }) 
+@RequestMapping(value = { "/adfs" }) 
 public class ADFSController {
 	private static Logger log = LoggerFactory.getLogger(ADFSController.class);
 	
@@ -60,7 +60,7 @@ public class ADFSController {
     private String logoutUrl;
 	
 	@CrossOrigin(origins = "*", maxAge = 3600)
-	@GetMapping(value="/adfs", produces = MediaType.TEXT_HTML_VALUE)
+	@GetMapping(value="/authorize", produces = MediaType.TEXT_HTML_VALUE)
 	public ResponseEntity<Object> authorize(@RegisteredOAuth2AuthorizedClient OAuth2AuthorizedClient authorizedClient,
             @AuthenticationPrincipal OAuth2User oauth2User, HttpServletRequest request) throws URISyntaxException {
 		
