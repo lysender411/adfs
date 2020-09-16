@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>ADFS SPA</title>
+    <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-icons.min.css">
+    <style>
+        .bg-dark{
+                background: #113366!important;
+        }
+        body{
+            height:100%;
+        }
+        .full-height{
+            height:100%;
+        }
+        .text-break{
+        	hyphens: none!important; 
+        }
+     
+    </style>
+    <script>
+        function refreshADFS() {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    adfsToken = this.responseText;
+                    document.getElementById("newToken").className = "modal active"; 
+                    document.getElementById("tokenContent").innerHTML = adfsToken;
+                   
+                }
+            };
+            xhttp.open("GET", refreshUrl, true);
+            xhttp.withCredentials = true;
+            xhttp.send();
+        }
+        
+        function closeToken() {
+            document.getElementById("newToken").className = "modal inactive"; 
+        }
+        
+        function GetResource1() {
+            
+            document.getElementById("cType").innerText = '';
+            document.getElementById("rImg").src = '';
+            
+            document.getElementById("resourceWindow").style.display = "inline"; 
+            document.getElementById("apiDiag").style.display = "none";           
+            
+            document.getElementById("rURL").innerText = 'GET '+retrieveUrl;
+            
+            if(adfsToken!=null && adfsToken.length>0 && !isTokenExpired(adfsToken)){
+            	document.getElementById("rHeader").innerText = '--header "Authorization":"Bearer '+adfsToken+'"';
+            	retrieveResource1();
+            }else{
+           		var xhttp = new XMLHttpRequest();
+            	xhttp.onreadystatechange = function() {
+                	if (this.readyState == 4){
+                    	if(this.status == 200) {
+                    		adfsToken = this.responseText;
+                        	document.getElementById("rHeader").innerText = '--header "Authorization":"Bearer '+adfsToken+'"';
+                        	retrieveResource1();
+                    	}else{
+                        	document.getElementById("cType").innerText = this.responseText;
+                    	}    
+                	}
+            	};
+            	xhttp.open("GET", refreshUrl, true);
+            	xhttp.withCredentials = true;
+            	xhttp.send();
+            }	
+        }
+        
+        function retrieveResource1() {
+            
+            var xhttp = new XMLHttpRequest();
+            
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4){
+                    if(this.status == 200) {
+                        var contentType = xhttp.getResponseHeader("Content-Type");
+                        var blob = xhttp.response;
+            
+                        document.getElementById("cType").innerText = contentType;
+                        document.getElementById("rImg").src = window.URL.createObjectURL(blob);
+                    }else{
+                        document.getElementById("cType").innerText = "error: fail to retrieve";
+                    }    
+                }
+            };
+            xhttp.open("GET", retrieveUrl, true);
+//            xhttp.withCredentials = true;
+            xhttp.responseType = "blob";
+            xhttp.setRequestHeader('Authorization', 'Bearer '+adfsToken);
+            xhttp.send();
+        }
+        
+        function GetResource2() {
+            document.getElementById("cType").innerText = '';
+            document.getElementById("rImg").src = '';
+            
+            var target = "https%3A%2F%2Fc2kstaffupload.intra.dev-toronto.ca%2Feis_upload%2Fretrieve%2Fc2k_staff%2Ftest1-20200611-award-8d2340f33f39f479.png";
+            
+            var forwardUrl = "https://c2kstaffupload.intra.dev-toronto.ca/eis_upload/adfs/forward?target="+target+"&method=GET";
+            
+            document.getElementById("resourceWindow").style.display = "inline"; 
+            document.getElementById("apiDiag").style.display = "none"; 
+            
+            document.getElementById("rURL").innerText = 'GET '+forwardUrl;
+            document.getElementById("rHeader").innerText = '';
+            
+            
+            var xhttp = new XMLHttpRequest();
+            
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4){
+                    if(this.status == 200) {
+                        var contentType = xhttp.getResponseHeader("Content-Type");
+                        var blob = xhttp.response;
+                        
+                        document.getElementById("cType").innerText = contentType;
+                        document.getElementById("rImg").src = window.URL.createObjectURL(blob);
+                    }else{
+                        document.getElementById("cType").innerText = "Error: You don't have permision to get remote resource. "+this.statusText;
+                    }      
+                }
+            };
+            xhttp.open("GET", forwardUrl, true);
+            xhttp.withCredentials = true;
+            xhttp.responseType = "blob";
+            xhttp.send();
+        }
+    
+        
+        function loadProfile(){
+            
+            var xhttp = new XMLHttpRequest();
+             
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4){
+                    if(this.status == 200) {
+                        var profile = xhttp.response;
+                        document.getElementById("notice").innerText = "You have logged in ADFS."
+                        document.getElementById("profile").innerText = JSON.stringify(profile, null, 2);
+                        document.getElementById("loginButton").className = "d-none";
+                        document.getElementById("logoutButton").className = "btn";
+                        document.getElementById("refreshButton").className = "inline";
+                        
+                        document.getElementById("loginDiag").style.display = "none";
+                        document.getElementById("apiDiag").style.display = "";
+                        document.getElementById("func").style.display = "";
+                        document.getElementById("resourceWindow").style.display = "none";
+                                               
+                        loginFlag = true;
+                    }else{
+                        document.getElementById("notice").innerText = "You have not logged in."
+                        document.getElementById("profile").innerText = "";
+                        document.getElementById("loginButton").className = "btn btn-primary";
+                        document.getElementById("logoutButton").className = "d-none";
+                        document.getElementById("refreshButton").className = "d-none";
+                        
+                        document.getElementById("loginDiag").style.display = "";
+                        document.getElementById("apiDiag").style.display = "none";
+                        document.getElementById("func").style.display = "none";
+                        document.getElementById("resourceWindow").style.display = "none";
+                        
+                        loginFlag = false;
+                    }      
+                }
+            };
+            xhttp.open("GET", statusUrl, true);
+            xhttp.withCredentials = true;
+            xhttp.responseType = 'json';
+            xhttp.send();
+        }
+        
+        function isTokenExpired(tokenString){
+            var res = tokenString.split(".");
+            if(res.length!=3) return true;
+            
+            var payload = atob(res[1]);
+            var expRegexp = /"exp":([0-9]*),/g;
+	        var match = expRegexp.exec(payload);
+            var exp = parseInt(match[1]);
+            var now = Math.floor((new Date().getTime())/1000);
+            
+            return exp<now;
+        }
+
+        
+        var adfsToken="token";
+//        var refreshUrl = "https://config.cc.toronto.ca/eis_oidc/adfs/refresh";
+        var refreshUrl = "https://c2kstaffupload.intra.dev-toronto.ca/eis_upload/adfs/refresh";
+        var retrieveUrl = "https://c2kstaffupload.intra.dev-toronto.ca/eis_upload/retrieve/c2k_staff/test1-20200611-award-8d2340f33f39f479.png";
+        var statusUrl = "https://c2kstaffupload.intra.dev-toronto.ca/eis_upload/adfs/status";
+        
+        var loginFlag = false;
+        var adfsToken = "";
+
+    </script>
+</head>
+<body onload="loadProfile()">
+    
+    <div class="columns col-gapless full-height">
+        <div class="column col-3 bg-dark full-height">
+            <div class="container bg-dark p-2">
+                <div class="columns">
+                    <div class="pt-1 column col-5">
+                        <img src="https://www.toronto.ca/wp-content/themes/cot/img/logo.svg" width="90%" alt="City of Toronto">
+                    </div>
+                    <div class="p-centered column col-7">
+                        <div class="card-subtitle text-white">OIDC Authentication</div>
+                        <div class="card-subtitle text-white">API Access Service</div>
+                    </div>
+                </div>    
+            </div>
+            
+            <div id="loginWindow" class="empty bg-dark"> 
+                <div class="empty-icon">
+                    <i class="icon icon-2x icon-people"></i>  <!-- Compliant icon fonts usage -->
+                </div>
+                <p class="empty-subtitle" id="notice">You have not Logged in</p>
+                
+                <div class="empty-action">
+                    <a href="https://c2kstaffupload.intra.dev-toronto.ca/eis_upload/oauth2/authorization/adfs" id="loginButton" class="btn btn-primary" target="authWin">Login ADFS</a>
+                    <a href="https://c2kstaffupload.intra.dev-toronto.ca/eis_upload/adfs/invalidate?noRedirect" id="logoutButton" class="btn d-none" target="authWin">Logout ADFS</a>
+                </div>
+            </div>
+            
+            <div class="panel" style="border:none">
+            	<pre id="profile" class="text-left text-tiny"></pre>
+            </div>
+            
+            <div class="empty bg-dark ">
+                <div class="tile">
+                    <div class="tile-action">
+                        <button onclick="refreshADFS()" class="btn btn-success" id="refreshButton">Refresh ADFS Token</button>
+                    </div>
+                </div>
+            </div>    
+            
+            <div class="empty bg-dark ">
+                <div class="tile float-right">
+                    <div class="tile-icon">
+                        <div class="example-tile-icon">
+                            <i class="icon icon-share centered"></i> <!-- Compliant icon fonts usage -->
+                        </div>
+                    </div>
+                    <div class="tile-action">
+                        <a href="https://config.cc.toronto.ca/eis_oidc/sequence.html" target="_blank" rel="noopener noreferrer" class="btn btn-link text-gray">Open Sequence Diagrams</a>
+                    </div>
+                </div>
+                
+                <div class="tile float-right">
+                    <div class="tile-icon">
+                        <div class="example-tile-icon">
+                            <i class="icon icon-share centered"></i> <!-- Compliant icon fonts usage -->
+                        </div>
+                    </div>
+                    <div class="tile-action">
+                        <a href="https://config.cc.toronto.ca/eis_oidc/interact.html" target="_blank" rel="noopener noreferrer" class="btn btn-link text-gray">Open Interact Diagrams</a>
+                    </div>
+                </div>
+            </div>    
+            
+            
+        </div>
+        <div class="column column-7 flex-centered">
+            
+            <div id="resourceWindow" class="panel">
+                <div id="tokenWindow">
+                    <span id="rURL" class="text-break"></span> <br><br>
+                    <span id="rHeader" class="text-break"></span>
+                </div>
+           		<div class="divider"></div>
+                <div id="retrieveW">
+                    <span id="cType" style="vertical-align: top;"></span>
+                    <img id="rImg" alt="retrieveImage">
+                </div>
+            </div>
+
+            <div class="panel" id="loginDiag">
+                <div class="panel-body">
+                    <img src="https://config.cc.toronto.ca/eis_oidc/SPALogin.svg" alt="API Diagram 1" class="img-responsive">
+                </div>
+            </div>
+            
+             <div class="panel" id="apiDiag">
+                <div class="panel-body">
+                    <img src="https://config.cc.toronto.ca/eis_oidc/SPAAPI1.svg" alt="API Diagram 1" class="img-responsive">
+                    <br/><hr/><br/>
+                    <img src="https://config.cc.toronto.ca/eis_oidc/SPAAPI2.svg" alt="API Diagram 2" class="img-responsive">
+                </div>
+            </div>
+        </div>
+        
+        <div class="column col-2 bg-secondary full-height" id="func">
+            <div class="panel bg-secondary"><div class="panel-body"><h4>Access API</h4></div></div>
+            
+            <div class="card bg-secondary">
+                <div class="card-header">
+                    <div class="card-title h5">Option 1</div>
+                    <div class="card-subtitle">Secured Authorization Code Grant Flow with Short-live Access Token</div>
+                </div>
+
+                <div class="card-footer">
+                    <button class="btn btn-primary" onclick="GetResource1()">try it out</button>
+                </div>
+            </div>
+            
+            <div class="card bg-secondary">
+                <div class="card-header">
+                    <div class="card-title h5">Option 2</div>
+                    <div class="card-subtitle">Secured Authorization Code Grant Flow with API Access Control Session</div>
+                </div>
+  
+                <div class="card-footer">
+                    <button class="btn btn-primary" onclick="GetResource2()">try it out</button>
+                </div>
+            </div>
+            <div>
+            	<iframe name="authWin" id="authWin" width="200" height="100"></iframe>
+            </div>
+        </div>
+    </div>    
+    
+    <div class="modal inactive" id="newToken">
+        <div class="modal-container">
+            <div class="modal-header">
+                <button onclick="closeToken()" class="btn btn-clear float-right"></Button>
+                <div class="modal-title h5">Short-live ADFS Token</div>
+            </div>
+            <div class="modal-body">
+                <div class="content text-break" id="tokenContent"></div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

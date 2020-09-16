@@ -1,0 +1,36 @@
+################################ 
+# This template is built to work with gitlab CI/CD.
+# Please contact victor.weng@toronto.ca for any customization requests.
+################################
+include:
+  - project: 'devops/gitlab-pipelines'
+    ref: REL-2.2
+    file: '/templates/gradle-ci-template.yml'
+
+variables:
+  # GRADLEW_OPTS: -x jacocoTestReport  # uncomment if no junit tests created
+  APP_PORT_MAPPINGS: -p 15090:8080
+  APP_ENV_MAPPINGS: -e JAVA_TOOL_OPTIONS='-Xmx256m -Dfile.encoding=UTF-8'
+  APP_DOCKER_HOST_MAPPINGS: "['master']=config.cc ['*']=config.cc"
+  LONG_LIVED_BRANCHES: /master|develop/ # regular expression. only changes in long-lived will be versioned, dist'ed and deployed
+
+compile & test:
+  extends: .eis_gradle_build
+
+dist:docker:
+  extends: .eis_docker_dist
+
+deploy:
+  extends: .eis_java_deploy
+
+.dist:SIT:
+  extends: .eis_sit_dist
+  variables:
+    DIST_EMAIL_TO: jguo@toronto.ca
+    DIST_PROTOCOL: scp
+    DIST_ENV_DESC: SIT-Intranet
+    DIST_HOST: lunar-a2.corp.toronto.ca
+    DIST_PATH: /inet/webas/lib/ESD-Common-Intranet/CC-KeysetManagement
+#    DIST_FILE_NAME: c3api_kms.jar
+
+

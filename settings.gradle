@@ -1,0 +1,10 @@
+
+rootProject.name = theName
+
+if (hasProperty('theEarName') && theEarName.trim()) {
+    include 'JEE_EAR'
+    project(":JEE_EAR").name = theEarName	// must be different than root project name
+}
+
+
+

@@ -1,0 +1,132 @@
+plugins {
+	id 'java'
+	id "org.springframework.boot" version "2.3.1.RELEASE"
+	id "io.spring.dependency-management" version "1.0.9.RELEASE"
+//	id 'com.palantir.git-version' version '0.12.3' // to get git-hash in manifest
+}
+
+repositories {
+	maven {
+		url "${theArtifactoryURI}/all-libs-local-readonly"
+		metadataSources {
+			mavenPom()
+			artifact()
+		}
+	}
+	jcenter()
+}
+
+/**
+ * theName, theGroup & theVersion etc. are defined globally in gradle.properties file. 
+ * DO NOT modify them in build.gradle!
+ */
+sourceCompatibility = theSourceCompatibility
+targetCompatibility = theSourceCompatibility
+group = theGroup
+version = theVersion
+
+compileJava {
+	// suppress compiler warnings
+	options.compilerArgs << "-Xlint:-deprecation" << "-Xlint:-options"
+}
+
+dependencyManagement {
+	resolutionStrategy { // for sprint boot projects to load latest snapshots
+		cacheChangingModulesFor 0, 'seconds'
+	}
+}
+
+configurations {
+    all {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+        exclude group: 'ch.qos.logback', module: 'logback-classic'
+        exclude group: 'org.apache.logging.log4j', module: 'log4j-to-slf4j'
+        exclude group: "com.vaadin.external.google", module:"android-json"
+        
+    }
+}
+
+dependencies {
+
+	implementation ('org.apache.tomcat.embed:tomcat-embed-core:9.0.37'){
+       force = true
+    }
+    implementation ('org.apache.tomcat.embed:tomcat-embed-websocket:9.0.37'){
+       force = true
+    }
+    
+	implementation "org.springframework.boot:spring-boot-starter-web"
+	
+	implementation "org.springframework.boot:spring-boot-starter-security"
+
+	implementation group: 'org.springframework.security.oauth', name: 'spring-security-oauth2', version: '2.5.0.RELEASE'	
+	implementation group: 'org.springframework.security', name: 'spring-security-oauth2-client', version: '5.3.2.RELEASE'
+	implementation group: 'org.springframework.security', name: 'spring-security-oauth2-jose', version: '5.3.2.RELEASE'
+	implementation group: 'org.springframework.security.oauth.boot', name: 'spring-security-oauth2-autoconfigure', version: '2.3.2.RELEASE'
+
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'		
+	implementation 'commons-codec:commons-codec:1.13'
+  
+    implementation 'org.apache.commons:commons-lang3:3.10'
+    implementation 'org.apache.commons:commons-collections4:4.4'
+    implementation 'org.apache.commons:commons-text:1.8'
+    
+    implementation 'com.jayway.jsonpath:json-path:2.4.0'
+    
+    implementation 'com.google.code.gson:gson:2.7'
+    
+    implementation ('com.google.guava:guava:29.0-jre'){
+       force = true
+    }
+
+	implementation group: 'commons-io', name: 'commons-io', version: '2.6'
+	
+	implementation group: 'javax.servlet', name: 'javax.servlet-api', version: '4.0.1'
+
+	implementation 'org.apache.httpcomponents:httpclient:4.5.12'
+
+	implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.6.1'	
+	
+	compile("com.hazelcast:hazelcast:4.0.1")
+	compile("com.hazelcast:hazelcast-spring:4.0.1")
+	
+	compile 'org.springframework.session:spring-session-core'
+	
+	compileOnly 'findbugs:findbugs:1.0.0'
+	compile group: 'org.owasp.encoder', name: 'encoder', version: '1.2'
+	
+    
+	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("org.springframework.boot:spring-boot-starter-tomcat")
+
+}
+
+// == Manifest Standardized ==
+ext.sharedManifest = manifest {
+    attributes(
+	'Built-By'       : System.properties['user.name'],
+	'Build-Timestamp': new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
+	'Created-By'     : "Gradle ${gradle.gradleVersion}",
+//	'Git-Hash'       : versionDetails().gitHash?:'init', 
+	"Implementation-Version": findProperty('buildNo')?:'Unknown',
+	'Build-JDK'      : "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
+	'Build-OS'       : "${System.properties['os.name']} (${System.properties['os.arch']} ${System.properties['os.version']})"
+	)
+}
+if (findProperty('theEarName')?.trim()) {
+	apply plugin: 'war'
+	if (project.plugins.findPlugin('org.springframework.boot')) {
+		bootWar.manifest { from sharedManifest }
+		bootWar.launchScript()
+	} else {
+		war.manifest { from sharedManifest }
+	}
+} else {
+	if (project.plugins.findPlugin('org.springframework.boot')) {
+		bootJar.manifest { from sharedManifest }
+		bootJar.launchScript()
+	} else {
+		jar.manifest { from sharedManifest }
+	}
+}
+

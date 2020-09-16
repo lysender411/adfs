@@ -1,0 +1,12 @@
+version: '2.2'
+services:
+  sbweb:
+    build:
+      context: ${PROJ_ROOT}
+      args:
+        BIN_NAME: ${JAR_NAME}
+        WEB_CONTEXT: ${WEB_CONTEXT}
+    image: ${IMAGE_NAME}
+    init: true
+    ports:
+      - "8080"

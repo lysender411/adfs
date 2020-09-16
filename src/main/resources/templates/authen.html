@@ -1,0 +1,25 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+<title>OIDC Service</title>
+</head>
+<body>
+
+        <div>
+            <div>
+                <h1>OIDC Service</h1>
+                <p>You signed in successfully.</p>
+                <h2>Client Name</h2>
+                <pre th:text="${clientInfo}"> </pre>
+                <h2>User Attributes</h2>
+                <pre th:text="${userInfo}"> </pre>      
+                <h2> Access Token</h2>
+                <pre th:text="${accessToken}"></pre>   
+                <h2> Refresh Token</h2>
+                <pre th:text="${refreshToken}"></pre>         
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,27 @@
+plugins {
+    id 'ear'
+}
+
+// project.name can only be set in the settings.gradle file
+project.version = theVersion
+project.group = theGroup
+project.buildDir = rootProject.buildDir
+
+ear {
+	manifest {
+		from rootProject.sharedManifest
+	}
+	// -- do not use dependecy:deploy:project to include war, as it will add an entry to application.xml 
+	// -- with version included, and there is no easy way to get rid of it.
+	from("${project.buildDir}/libs/") {	// include the war file to ear root folder
+		include rootProject.war.archiveName
+		into "/"
+	}
+	rename(/(.*)-${version}\.war/, /$1.war/)	// string off version from war file per webmaster's request
+	deploymentDescriptor {
+		applicationName = project.name
+		displayName = theDisplayName
+		webModule("${rootProject.name}.war", findProperty('theWebContextName')?:'')
+	}
+
+}

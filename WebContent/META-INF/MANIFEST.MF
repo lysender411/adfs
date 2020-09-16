@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Implementation-Title: c3_jee_template
+Implementation-Version: 1
+Name: CC-ForRefByWebmaster
+Specification-Title: c3_jee_template
+Implementation-Timestamp: Sat Mar 23 04:01:21 EDT 2019
+Specification-Version: 1.0.1
+

@@ -1,0 +1,34 @@
+FROM openjdk:8-jre-alpine
+
+# proxy must be defined 1st otherwise apk won't work
+ENV http_proxy http://bugatti.corp.toronto.ca:3128
+ENV https_proxy http://bugatti.corp.toronto.ca:3128
+ENV no_proxy .toronto.ca,localhost,0,1,2,3,4,5,6,7,8,9
+
+# Setup timezone & create /app/config dir which will be bound to host 
+# dir /opt/dockerContainer/<host>/<conainer_name>/, where you could
+# store the APP_OPTS and other files in need for app running.
+RUN apk add tzdata \
+  && cp /usr/share/zoneinfo/America/Toronto /etc/localtime \
+  && mkdir -p /app/config
+
+ENV BASE_JAVA_OPTS -D"java.security.egd=file:/dev/./urandom" \
+  -D"user.timezone=America/Toronto"
+
+# Required params
+ARG BIN_NAME
+ARG WEB_CONTEXT
+
+COPY ${BIN_NAME} /app/app.jar
+
+# Entry point only takes ENV var, ARG not work in it. https://vsupalov.com/docker-arg-vs-env/
+ENV ENV_CONTEXT=${WEB_CONTEXT}
+
+# use grep -s in case the file doesn't exist. 
+RUN echo '#!/bin/sh' > /entrypoint.sh \
+	&& echo 'set -x' >> /entrypoint.sh \
+	&& echo 'export APP_OPTS=`grep -sv "^#" /app/config/APP_OPTS|tr "\n" " "`' >> /entrypoint.sh \
+	&& echo 'sh -c "cd /app; exec java $BASE_JAVA_OPTS $JAVA_OPTS $APP_OPTS -jar app.jar --server.servlet.context-path=/$ENV_CONTEXT"'  >> /entrypoint.sh \
+	&& chmod a+x /entrypoint.sh
+	 
+ENTRYPOINT /entrypoint.sh
