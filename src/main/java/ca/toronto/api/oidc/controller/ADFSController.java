@@ -78,8 +78,8 @@ public class ADFSController {
 		
 		log.info("clientID === "+clientId+"       principleName === "+principleName);
         
-		log.info(authorizedClient.getAccessToken() + " --- "+ authorizedClient.getRefreshToken());
-		
+		log.info(authorizedClient.getAccessToken().getTokenValue() + " --- "+ authorizedClient.getRefreshToken().getTokenValue());
+		//log.info("Id token is {}", authorizedClient.get);
 		ADFSTokens adfsToken = new ADFSTokens(upn, clientId);
 		
 		String errorMsg = "";

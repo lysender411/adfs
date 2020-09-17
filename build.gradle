@@ -36,15 +36,6 @@ dependencyManagement {
 	}
 }
 
-configurations {
-    all {
-        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
-        exclude group: 'ch.qos.logback', module: 'logback-classic'
-        exclude group: 'org.apache.logging.log4j', module: 'log4j-to-slf4j'
-        exclude group: "com.vaadin.external.google", module:"android-json"
-        
-    }
-}
 
 dependencies {
 
@@ -84,8 +75,6 @@ dependencies {
 	implementation group: 'javax.servlet', name: 'javax.servlet-api', version: '4.0.1'
 
 	implementation 'org.apache.httpcomponents:httpclient:4.5.12'
-
-	implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.6.1'	
 	
 	compile("com.hazelcast:hazelcast:4.0.1")
 	compile("com.hazelcast:hazelcast-spring:4.0.1")
@@ -101,9 +90,7 @@ dependencies {
 
 }
 
-bootRun {
-    jvmArgs = ["-Djavax.net.ssl.trustStore=/app/config/adfs_qa_cert.jks", "-Djavax.net.ssl.trustStorePassword=changeit"]
-}
+
 
 // == Manifest Standardized ==
 ext.sharedManifest = manifest {

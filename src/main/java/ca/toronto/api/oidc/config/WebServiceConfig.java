@@ -7,10 +7,7 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
-
 import javax.net.ssl.SSLContext;
-
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -19,12 +16,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.session.web.http.DefaultCookieSerializer;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.request.RequestContextListener;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
+import ca.toronto.api.oidc.utils.RequestLoggingFilter;
+
 
 
 @Configuration
@@ -70,6 +65,12 @@ public class WebServiceConfig {
 
 		return new RequestContextListener();
 	}
+	
+    @Bean
+    public RequestLoggingFilter requestLoggingFilter() 
+    {
+    	return new RequestLoggingFilter();
+    }
 	
 	@Bean
 	public RestTemplate restTemplate() throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
