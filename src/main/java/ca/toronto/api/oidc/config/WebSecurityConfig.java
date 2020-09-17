@@ -35,7 +35,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         	.and().logout().invalidateHttpSession(true).clearAuthentication(true).deleteCookies("JSESSIONID").permitAll()
 
         	// enable OAuth2/OIDC
-        	.and().oauth2Login().successHandler(successHandler()).failureHandler(failureHandler())
+        	.and().oauth2Login()//.redirectionEndpoint().baseUri("/oauth2/callback/adfs").and()
+        	//.successHandler(successHandler()).failureHandler(failureHandler())
         	
         	.and().csrf().csrfTokenRepository(new CookieCsrfTokenRepository())
 			.requireCsrfProtectionMatcher(httpServletRequest -> httpServletRequest.getMethod().equals("DELETE"));

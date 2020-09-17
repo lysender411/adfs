@@ -2,7 +2,7 @@ plugins {
 	id 'java'
 	id "org.springframework.boot" version "2.3.1.RELEASE"
 	id "io.spring.dependency-management" version "1.0.9.RELEASE"
-//	id 'com.palantir.git-version' version '0.12.3' // to get git-hash in manifest
+	id 'com.palantir.git-version' version '0.12.3' // to get git-hash in manifest
 }
 
 repositories {
@@ -101,13 +101,17 @@ dependencies {
 
 }
 
+bootRun {
+    jvmArgs = ["-Djavax.net.ssl.trustStore=/app/config/adfs_qa_cert.jks", "-Djavax.net.ssl.trustStorePassword=changeit"]
+}
+
 // == Manifest Standardized ==
 ext.sharedManifest = manifest {
     attributes(
 	'Built-By'       : System.properties['user.name'],
 	'Build-Timestamp': new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
 	'Created-By'     : "Gradle ${gradle.gradleVersion}",
-//	'Git-Hash'       : versionDetails().gitHash?:'init', 
+	'Git-Hash'       : versionDetails().gitHash?:'init', 
 	"Implementation-Version": findProperty('buildNo')?:'Unknown',
 	'Build-JDK'      : "${System.properties['java.version']} (${System.properties['java.vendor']} ${System.properties['java.vm.version']})",
 	'Build-OS'       : "${System.properties['os.name']} (${System.properties['os.arch']} ${System.properties['os.version']})"

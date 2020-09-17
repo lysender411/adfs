@@ -39,7 +39,7 @@ public class ClientController {
 		String referrer = request.getHeader("Referer");
 	    request.getSession().setAttribute("referrer", referrer);
 		
-		response.sendRedirect("https://localhost:9015/join/oauth2/authorization/adfs");
+		response.sendRedirect("http://d1xd0146797.wkstn.toronto.ca:9018/join/oauth2/authorization/adfs");
     } 
 	
 	@GetMapping("/logout")
